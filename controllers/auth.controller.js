@@ -7,6 +7,23 @@ exports.register = async (req, res, next) => {
   try {
     const { name, email, password, department, role, managerId } = req.body;
 
+    // Validate required fields
+    if (!name || !email || !password || !department) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide all required fields: name, email, password, department'
+      });
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'User with this email already exists'
+      });
+    }
+
     // Create user
     const user = await User.create({
       name,
@@ -28,7 +45,12 @@ exports.register = async (req, res, next) => {
 
     sendTokenResponse(user, 201, res);
   } catch (err) {
-    next(err);
+    console.error('Registration error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Error registering user',
+      error: err.message
+    });
   }
 };
 
@@ -58,18 +80,32 @@ exports.login = async (req, res, next) => {
     }
 
     // Check if password matches
-    const isMatch = await user.matchPassword(password);
+    try {
+      const isMatch = await user.matchPassword(password);
 
-    if (!isMatch) {
-      return res.status(401).json({
+      if (!isMatch) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid credentials'
+        });
+      }
+
+      sendTokenResponse(user, 200, res);
+    } catch (error) {
+      console.error('Password matching error:', error);
+      return res.status(500).json({
         success: false,
-        message: 'Invalid credentials'
+        message: 'Error during authentication',
+        error: error.message
       });
     }
-
-    sendTokenResponse(user, 200, res);
   } catch (err) {
-    next(err);
+    console.error('Login error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Error logging in',
+      error: err.message
+    });
   }
 };
 
@@ -80,12 +116,24 @@ exports.getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
 
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
     res.status(200).json({
       success: true,
       data: user
     });
   } catch (err) {
-    next(err);
+    console.error('Get user error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Error retrieving user data',
+      error: err.message
+    });
   }
 };
 
