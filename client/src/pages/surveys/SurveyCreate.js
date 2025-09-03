@@ -22,9 +22,6 @@ import { surveyApi } from '../../services/api';
 import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 // Mock data for departments and employees
 // In a real app, these would come from an API
@@ -119,6 +116,10 @@ const SurveyCreate = () => {
     navigate('/surveys');
   };
 
+  const handleDateChange = (date) => {
+    formik.setFieldValue('publicDate', date);
+  };
+
   return (
     <Container maxWidth="md">
       <Box sx={{ mt: 4, mb: 4 }}>
@@ -144,26 +145,24 @@ const SurveyCreate = () => {
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                  <DatePicker
-                    label="Public Date"
-                    value={formik.values.publicDate}
-                    onChange={(newValue) => {
-                      formik.setFieldValue('publicDate', newValue);
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        fullWidth
-                        id="publicDate"
-                        name="publicDate"
-                        error={formik.touched.publicDate && Boolean(formik.errors.publicDate)}
-                        helperText={formik.touched.publicDate && formik.errors.publicDate}
-                      />
-                    )}
-                    disablePast
-                  />
-                </LocalizationProvider>
+                <TextField
+                  fullWidth
+                  id="publicDate"
+                  name="publicDate"
+                  label="Public Date"
+                  type="date"
+                  value={formik.values.publicDate ? new Date(formik.values.publicDate).toISOString().split('T')[0] : ''}
+                  onChange={(e) => {
+                    const date = e.target.value ? new Date(e.target.value) : null;
+                    handleDateChange(date);
+                  }}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.publicDate && Boolean(formik.errors.publicDate)}
+                  helperText={formik.touched.publicDate && formik.errors.publicDate}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
               </Grid>
 
               <Grid item xs={12} sm={6}>
