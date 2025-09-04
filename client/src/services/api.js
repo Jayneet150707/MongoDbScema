@@ -126,6 +126,20 @@ export const surveyApi = {
         message: error.response?.data?.message || 'Failed to generate consent records' 
       };
     }
+  },
+
+  // Get survey by token (for anonymous access)
+  getSurveyByToken: async (token) => {
+    try {
+      const response = await axios.get(`/api/surveys/token/${token}`);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error fetching survey by token ${token}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch survey' 
+      };
+    }
   }
 };
 
@@ -306,6 +320,34 @@ export const consentApi = {
         message: error.response?.data?.message || 'Failed to check user consent' 
       };
     }
+  },
+
+  // Get consent status for a survey (admin)
+  getConsentStatus: async (surveyId) => {
+    try {
+      const response = await axios.get(`/api/surveys/${surveyId}/consent/status`);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error fetching consent status for survey ${surveyId}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch consent status' 
+      };
+    }
+  },
+
+  // Send consent emails
+  sendConsentEmails: async (surveyId) => {
+    try {
+      const response = await axios.post(`/api/surveys/${surveyId}/consent/send-emails`);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error sending consent emails for survey ${surveyId}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to send consent emails' 
+      };
+    }
   }
 };
 
@@ -393,6 +435,20 @@ export const responseApi = {
         message: error.response?.data?.message || 'Failed to fetch participation statistics' 
       };
     }
+  },
+
+  // Submit anonymous response
+  submitAnonymousResponse: async (responseData) => {
+    try {
+      const response = await axios.post('/api/responses/anonymous', responseData);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error('Error submitting anonymous response:', error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to submit anonymous response' 
+      };
+    }
   }
 };
 
@@ -422,6 +478,52 @@ export const reportApi = {
       return { 
         success: false, 
         message: error.response?.data?.message || 'Failed to generate user report' 
+      };
+    }
+  },
+
+  // Get user report
+  getUserReport: async (userId, surveyId) => {
+    try {
+      const response = await axios.get(`/api/reports/users/${userId}/surveys/${surveyId}`);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error fetching user report for survey ${surveyId}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch user report' 
+      };
+    }
+  },
+
+  // Export user report as PDF
+  exportUserReportPDF: async (userId, surveyId) => {
+    try {
+      const response = await axios.get(`/api/reports/users/${userId}/surveys/${surveyId}/export/pdf`, {
+        responseType: 'blob'
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error(`Error exporting user report PDF for survey ${surveyId}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to export user report as PDF' 
+      };
+    }
+  },
+
+  // Export user report as Excel
+  exportUserReportExcel: async (userId, surveyId) => {
+    try {
+      const response = await axios.get(`/api/reports/users/${userId}/surveys/${surveyId}/export/excel`, {
+        responseType: 'blob'
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error(`Error exporting user report Excel for survey ${surveyId}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to export user report as Excel' 
       };
     }
   },
@@ -513,6 +615,305 @@ export const notificationApi = {
         message: error.response?.data?.message || 'Failed to mark notification as read' 
       };
     }
+  },
+
+  // Get notifications
+  getNotifications: async () => {
+    try {
+      const response = await axios.get('/api/notifications');
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch notifications' 
+      };
+    }
+  },
+
+  // Mark as read
+  markAsRead: async (id) => {
+    try {
+      const response = await axios.put(`/api/notifications/${id}/read`);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error marking notification ${id} as read:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to mark notification as read' 
+      };
+    }
+  },
+
+  // Delete notification
+  deleteNotification: async (id) => {
+    try {
+      await axios.delete(`/api/notifications/${id}`);
+      return { success: true };
+    } catch (error) {
+      console.error(`Error deleting notification ${id}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to delete notification' 
+      };
+    }
+  },
+
+  // Mark all as read
+  markAllAsRead: async () => {
+    try {
+      const response = await axios.put('/api/notifications/mark-all-read');
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to mark all notifications as read' 
+      };
+    }
   }
 };
 
+// Department API
+export const departmentApi = {
+  // Get all departments
+  getDepartments: async (params = {}) => {
+    try {
+      const response = await axios.get('/api/departments', { params });
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error('Error fetching departments:', error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch departments' 
+      };
+    }
+  },
+
+  // Get department tree
+  getDepartmentTree: async () => {
+    try {
+      const response = await axios.get('/api/departments/tree');
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error('Error fetching department tree:', error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch department tree' 
+      };
+    }
+  },
+
+  // Get single department
+  getDepartment: async (id) => {
+    try {
+      const response = await axios.get(`/api/departments/${id}`);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error fetching department ${id}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch department' 
+      };
+    }
+  },
+
+  // Create department
+  createDepartment: async (departmentData) => {
+    try {
+      const response = await axios.post('/api/departments', departmentData);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error('Error creating department:', error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to create department' 
+      };
+    }
+  },
+
+  // Update department
+  updateDepartment: async (id, departmentData) => {
+    try {
+      const response = await axios.put(`/api/departments/${id}`, departmentData);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error updating department ${id}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to update department' 
+      };
+    }
+  },
+
+  // Delete department
+  deleteDepartment: async (id) => {
+    try {
+      await axios.delete(`/api/departments/${id}`);
+      return { success: true };
+    } catch (error) {
+      console.error(`Error deleting department ${id}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to delete department' 
+      };
+    }
+  },
+
+  // Get department employees
+  getDepartmentEmployees: async (id, params = {}) => {
+    try {
+      const response = await axios.get(`/api/departments/${id}/employees`, { params });
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error fetching department ${id} employees:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch department employees' 
+      };
+    }
+  }
+};
+
+// Employee API
+export const employeeApi = {
+  // Get all employees
+  getEmployees: async (params = {}) => {
+    try {
+      const response = await axios.get('/api/employees', { params });
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch employees' 
+      };
+    }
+  },
+
+  // Get employees by department
+  getEmployeesByDepartment: async (departmentId, params = {}) => {
+    try {
+      const response = await axios.get(`/api/employees/by-department/${departmentId}`, { params });
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error fetching employees for department ${departmentId}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch employees by department' 
+      };
+    }
+  },
+
+  // Get single employee
+  getEmployee: async (id) => {
+    try {
+      const response = await axios.get(`/api/employees/${id}`);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error fetching employee ${id}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch employee' 
+      };
+    }
+  },
+
+  // Create employee
+  createEmployee: async (employeeData) => {
+    try {
+      const response = await axios.post('/api/employees', employeeData);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error('Error creating employee:', error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to create employee' 
+      };
+    }
+  },
+
+  // Update employee
+  updateEmployee: async (id, employeeData) => {
+    try {
+      const response = await axios.put(`/api/employees/${id}`, employeeData);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error updating employee ${id}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to update employee' 
+      };
+    }
+  },
+
+  // Delete employee
+  deleteEmployee: async (id) => {
+    try {
+      await axios.delete(`/api/employees/${id}`);
+      return { success: true };
+    } catch (error) {
+      console.error(`Error deleting employee ${id}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to delete employee' 
+      };
+    }
+  },
+
+  // Get employee's direct reports
+  getDirectReports: async (id) => {
+    try {
+      const response = await axios.get(`/api/employees/${id}/direct-reports`);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error fetching direct reports for employee ${id}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch direct reports' 
+      };
+    }
+  },
+
+  // Get employee's reporting hierarchy
+  getReportingHierarchy: async (id) => {
+    try {
+      const response = await axios.get(`/api/employees/${id}/hierarchy`);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error fetching reporting hierarchy for employee ${id}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch reporting hierarchy' 
+      };
+    }
+  },
+
+  // Get employee's manager chain
+  getManagerChain: async (id) => {
+    try {
+      const response = await axios.get(`/api/employees/${id}/manager-chain`);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error fetching manager chain for employee ${id}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch manager chain' 
+      };
+    }
+  },
+
+  // Get managers list
+  getManagers: async (params = {}) => {
+    try {
+      const response = await axios.get('/api/employees/managers/list', { params });
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error('Error fetching managers:', error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch managers' 
+      };
+    }
+  }
+};
