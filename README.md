@@ -1,121 +1,397 @@
-# Survey Management System - MongoDB Schema
+# Paisalo Digital Limited - User & Department Management System
 
-This repository contains the MongoDB schema design for a Survey Management System that allows administrators to create surveys, collect user consent, and generate reports while maintaining user anonymity when required.
+A comprehensive user and department management system built with MongoDB, Express.js, React, and Node.js (MERN Stack) for Paisalo Digital Limited's survey management platform.
 
-## Schema Overview
+## 🏢 Company Information
 
-The database schema consists of the following collections:
+**Paisalo Digital Limited** - Empowering lives one loan at a time with our High Tech : High Touch approach.
 
-### 1. Surveys Collection
-Stores information about each survey:
-- `name`: Title of the survey
-- `publishDate`: Date when the survey becomes available
-- `durationDays`: Duration (in days) survey remains open
-- `endDate`: Calculated end date based on publishDate and durationDays
-- `department`: Target department for the survey (null if targeting all departments)
-- `targetEmployees`: Array of employee IDs if targeting specific users
-- `createdBy`: ID of the admin who created the survey
-- `createdAt`: Timestamp when the survey was created
-- `updatedAt`: Timestamp when the survey was last updated
-- `status`: Current status of the survey (draft, pending_consent, active, completed, archived)
-- `consentDeadline`: Deadline for providing consent (same as publishDate)
+**Website**: [https://paisalo.in](https://paisalo.in)
 
-### 2. Questions Collection
-Stores survey questions and their options:
-- `surveyId`: Reference to the survey this question belongs to
-- `questionText`: The text of the question
-- `options`: Array of options for the question (min 2, max 4)
-- `parameter`: Optional parameter for categorization
-- `order`: Order of the question in the survey
+**Motto**: "BHARAT AB RUKNA NAHI" (India will not stop now)
 
-### 3. Consents Collection
-Tracks user consent for each survey:
-- `userId`: ID of the user
-- `surveyId`: Reference to the survey
-- `consentGiven`: Whether consent was given
-- `timestamp`: When consent was given or denied
-- `consentToken`: Unique token for consent verification link
-- `emailSent`: Whether consent email was sent to the user
-- `emailSentAt`: When consent email was sent
+## 📋 Table of Contents
 
-### 4. Responses Collection
-Stores user responses to survey questions:
-- `surveyId`: Reference to the survey
-- `questionId`: Reference to the question
-- `userId`: ID of the user (null if anonymous/no consent)
-- `selectedOption`: The selected option
-- `submittedAt`: When the response was submitted
-- `anonymous`: Whether this response is anonymous (no user consent)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Database Schema](#database-schema)
+- [API Endpoints](#api-endpoints)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [UI Components](#ui-components)
+- [Authentication](#authentication)
+- [Contributing](#contributing)
 
-### 5. Notifications Collection
-Tracks notifications sent to users:
-- `userId`: ID of the user to notify
-- `surveyId`: Reference to the survey
-- `type`: Type of notification (consent_request, survey_available, manager_notification, reportee_notification)
-- `sent`: Whether notification was sent
-- `sentAt`: When notification was sent
-- `deliveryStatus`: Status of the notification delivery
-- `relatedToUserId`: For manager/reportee notifications, the ID of the related user
+## ✨ Features
 
-### 6. Users Collection
-Stores user information (for reference):
-- `email`: User's email address
-- `name`: User's full name
-- `department`: User's department
-- `role`: User's role in the system (admin, employee, manager)
-- `managerId`: ID of the user's manager (null if no manager)
-- `directReports`: Array of user IDs who report to this user
+### 👥 User Management
+- **Complete CRUD Operations**: Create, read, update, and delete users
+- **Role-Based Access Control**: Admin, Manager, Employee roles
+- **Department Assignment**: Link users to departments
+- **Manager Relationships**: Establish reporting hierarchies
+- **Employee Details**: Employee ID, phone, position, join date
+- **Profile Management**: User profiles with avatars and contact info
+- **Account Status**: Active/inactive user management
+- **Advanced Search**: Search by name, email, employee ID, position
+- **Filtering**: Filter by department, role, status
+- **Pagination**: Efficient handling of large user lists
 
-### 7. Survey Attempts Collection
-Tracks who has taken the survey:
-- `surveyId`: Reference to the survey
-- `userId`: ID of the user (null if anonymous)
-- `startedAt`: When the survey was started
-- `completedAt`: When the survey was completed (null if not completed)
-- `completed`: Whether the survey was completed
-- `anonymous`: Whether this attempt is anonymous
+### 🏢 Department Management
+- **Hierarchical Structure**: Parent-child department relationships
+- **Manager Assignment**: Assign department managers
+- **Budget Tracking**: Department budget management with currency formatting
+- **Employee Count**: Real-time employee count per department
+- **Location Management**: Department location tracking
+- **Safety Features**: Prevents deletion of departments with employees
+- **Department Statistics**: Comprehensive department analytics
+- **Search & Filter**: Advanced search and filtering capabilities
 
-## Workflow Implementation
+### 🎨 Paisalo-Themed UI
+- **Corporate Branding**: Professional blue and orange color scheme
+- **Responsive Design**: Mobile-friendly interface
+- **Material-UI Integration**: Consistent design system
+- **Custom Theme**: Paisalo Digital Limited branded theme
+- **Interactive Components**: Modern UI with smooth animations
+- **Data Visualization**: Statistics cards and charts
+- **Form Validation**: Real-time form validation with error handling
 
-The schema supports the following workflow:
+### 🔐 Security Features
+- **JWT Authentication**: Secure token-based authentication
+- **Password Hashing**: bcrypt password encryption
+- **Role-Based Authorization**: Granular access control
+- **Rate Limiting**: API rate limiting for security
+- **Input Validation**: Comprehensive data validation
+- **CORS Protection**: Cross-origin request security
+- **Helmet Security**: Security headers and protection
 
-1. **Survey Creation**:
-   - Admin creates a survey in the `surveys` collection
-   - Questions are uploaded to the `questions` collection
+## 🛠 Technology Stack
 
-2. **Consent Process**:
-   - System creates entries in the `consents` collection with unique tokens
-   - Consent emails are sent and tracked in the `notifications` collection
-   - Users can provide consent before the publish date
+### Backend
+- **Node.js**: Runtime environment
+- **Express.js**: Web application framework
+- **MongoDB**: NoSQL database
+- **Mongoose**: MongoDB object modeling
+- **JWT**: JSON Web Tokens for authentication
+- **bcryptjs**: Password hashing
+- **Helmet**: Security middleware
+- **CORS**: Cross-origin resource sharing
+- **Morgan**: HTTP request logger
+- **Express Rate Limit**: Rate limiting middleware
 
-3. **Survey Publication**:
-   - On the publish date, notifications are sent to consenting users, their managers, and reportees
-   - These notifications are tracked in the `notifications` collection
+### Frontend
+- **React**: User interface library
+- **Material-UI (MUI)**: React component library
+- **React Router**: Client-side routing
+- **Formik**: Form handling
+- **Yup**: Form validation
+- **React Toastify**: Toast notifications
+- **Custom Paisalo Theme**: Corporate branding
 
-4. **Survey Participation**:
-   - User attempts are tracked in the `surveyAttempts` collection
-   - Responses are stored in the `responses` collection
-   - For users without consent, responses are stored anonymously (userId = null)
+## 📊 Database Schema
 
-5. **Reporting**:
-   - Reports can be generated by querying the `responses` collection
-   - User-specific reports are only available for users who gave consent
+### User Schema
+```javascript
+{
+  _id: ObjectId,
+  email: String (unique, required),
+  name: String (required),
+  password: String (hashed, required),
+  department: ObjectId (ref: Department, required),
+  role: String (enum: ['admin', 'manager', 'employee']),
+  managerId: ObjectId (ref: User),
+  employeeId: String (unique),
+  phoneNumber: String,
+  position: String,
+  joinDate: Date,
+  isActive: Boolean,
+  directReports: [ObjectId] (ref: User),
+  lastLogin: Date,
+  profileImage: String,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
 
-## Indexes
+### Department Schema
+```javascript
+{
+  _id: ObjectId,
+  name: String (unique, required),
+  code: String (unique, required, uppercase),
+  description: String,
+  managerId: ObjectId (ref: User),
+  parentDepartment: ObjectId (ref: Department),
+  budget: Number,
+  location: String,
+  isActive: Boolean,
+  employeeCount: Number,
+  subDepartments: [ObjectId] (ref: Department),
+  establishedDate: Date,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
 
-The schema includes indexes for optimizing common queries:
-- Surveys by publish date, status, and department
-- Questions by survey ID and order
-- Consents by user ID and survey ID
-- Responses by survey ID, question ID, and user ID
-- Notifications by user ID, survey ID, and type
-- Survey attempts by survey ID, user ID, and completion status
+## 🔌 API Endpoints
 
-## Usage
+### Authentication Routes (`/api/auth`)
+- `POST /register` - Register new user
+- `POST /login` - User login
+- `GET /me` - Get current user
+- `PUT /profile` - Update user profile
+- `POST /change-password` - Change password
+- `POST /logout` - Logout user
+- `POST /refresh` - Refresh JWT token
 
-To implement this schema in MongoDB:
+### User Routes (`/api/users`)
+- `GET /` - Get all users (with pagination and filtering)
+- `GET /:id` - Get single user
+- `POST /` - Create new user (Admin only)
+- `PUT /:id` - Update user
+- `DELETE /:id` - Deactivate user (Admin only)
+- `GET /managers/list` - Get list of managers
+- `GET /:id/hierarchy` - Get user's reporting hierarchy
+- `GET /department/:departmentId` - Get users by department
 
-1. Connect to your MongoDB instance
-2. Run the `survey_management_schema.js` script to create the collections and indexes
-3. Implement application logic to interact with these collections according to the workflow described above
+### Department Routes (`/api/departments`)
+- `GET /` - Get all departments (with pagination and filtering)
+- `GET /tree` - Get department tree structure
+- `GET /:id` - Get single department
+- `POST /` - Create new department (Admin only)
+- `PUT /:id` - Update department (Admin only)
+- `DELETE /:id` - Delete department (Admin only)
+- `GET /:id/employees` - Get employees in department
+- `GET /:id/stats` - Get department statistics
+
+## 🚀 Installation
+
+### Prerequisites
+- Node.js (v16 or higher)
+- MongoDB (v4.4 or higher)
+- npm or yarn
+
+### Backend Setup
+```bash
+# Clone the repository
+git clone <repository-url>
+cd paisalo-survey-management
+
+# Install server dependencies
+cd server
+npm install
+
+# Create environment file
+cp .env.example .env
+
+# Edit .env with your configuration
+nano .env
+
+# Start the server
+npm run dev
+```
+
+### Frontend Setup
+```bash
+# Install client dependencies
+cd client
+npm install
+
+# Start the development server
+npm start
+```
+
+## ⚙️ Configuration
+
+### Environment Variables (.env)
+```env
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+
+# Database Configuration
+MONGODB_URI=mongodb://localhost:27017/paisalo_survey_db
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key
+JWT_EXPIRE=24h
+
+# Email Configuration (for notifications)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=your-email@paisalo.in
+EMAIL_PASS=your-email-password
+
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+```
+
+## 📱 Usage
+
+### Starting the Application
+1. Start MongoDB service
+2. Start the backend server: `npm run dev`
+3. Start the frontend application: `npm start`
+4. Access the application at `http://localhost:3000`
+
+### Default Admin User
+```javascript
+{
+  email: "admin@paisalo.in",
+  password: "admin123",
+  role: "admin"
+}
+```
+
+### User Management Workflow
+1. **Login** as admin
+2. **Navigate** to User Management
+3. **Create** departments first
+4. **Add** users and assign to departments
+5. **Set** manager relationships
+6. **Manage** user roles and permissions
+
+### Department Management Workflow
+1. **Create** parent departments
+2. **Add** subdepartments if needed
+3. **Assign** managers to departments
+4. **Set** budgets and locations
+5. **Monitor** employee counts and statistics
+
+## 🎨 UI Components
+
+### PaisaloUserManagement
+- **Location**: `client/src/pages/admin/PaisaloUserManagement.js`
+- **Features**: Complete user CRUD with Paisalo branding
+- **Components**: Data table, forms, filters, statistics cards
+- **Validation**: Formik + Yup validation
+- **Theme**: Paisalo corporate colors
+
+### PaisaloDepartmentManagement
+- **Location**: `client/src/pages/admin/PaisaloDepartmentManagement.js`
+- **Features**: Department management with hierarchy support
+- **Components**: Department tree, budget tracking, employee counts
+- **Validation**: Department code format, hierarchy validation
+- **Theme**: Consistent Paisalo branding
+
+### Paisalo Theme
+- **Location**: `client/src/theme/paisaloTheme.js`
+- **Colors**: Corporate blue (#1565C0) and orange (#FF7043)
+- **Typography**: Professional font system
+- **Components**: Customized Material-UI components
+- **Responsive**: Mobile-first design approach
+
+## 🔐 Authentication
+
+### JWT Implementation
+- **Token Generation**: On successful login
+- **Token Storage**: Client-side (localStorage/sessionStorage)
+- **Token Validation**: Middleware on protected routes
+- **Token Refresh**: Automatic token refresh mechanism
+- **Role-Based Access**: Different access levels for different roles
+
+### Password Security
+- **Hashing**: bcrypt with salt rounds
+- **Validation**: Minimum length and complexity requirements
+- **Change Password**: Secure password change workflow
+- **Reset Password**: Password reset functionality (future enhancement)
+
+## 📈 Performance Features
+
+### Database Optimization
+- **Indexing**: Strategic database indexes for performance
+- **Pagination**: Efficient data loading with pagination
+- **Population**: Optimized MongoDB population queries
+- **Aggregation**: Complex queries using MongoDB aggregation
+
+### Frontend Optimization
+- **Lazy Loading**: Component lazy loading
+- **Memoization**: React.memo for performance
+- **Debouncing**: Search input debouncing
+- **Caching**: API response caching
+
+## 🧪 Testing
+
+### Backend Testing
+```bash
+cd server
+npm test
+```
+
+### Frontend Testing
+```bash
+cd client
+npm test
+```
+
+## 📚 API Documentation
+
+### Response Format
+```javascript
+// Success Response
+{
+  "success": true,
+  "message": "Operation successful",
+  "data": { ... },
+  "pagination": { ... } // For paginated responses
+}
+
+// Error Response
+{
+  "success": false,
+  "message": "Error description",
+  "errors": [ ... ] // Validation errors
+}
+```
+
+### Pagination Format
+```javascript
+{
+  "currentPage": 1,
+  "totalPages": 10,
+  "totalUsers": 100,
+  "hasNextPage": true,
+  "hasPrevPage": false
+}
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Code Style
+- Use ESLint configuration
+- Follow React best practices
+- Write meaningful commit messages
+- Add comments for complex logic
+- Update documentation for new features
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📞 Support
+
+For support and questions:
+- **Email**: support@paisalo.in
+- **Website**: [https://paisalo.in](https://paisalo.in)
+- **Documentation**: [API Documentation](docs/api.md)
+
+## 🙏 Acknowledgments
+
+- **Paisalo Digital Limited** for the opportunity
+- **Material-UI** for the excellent component library
+- **MongoDB** for the flexible database solution
+- **React** community for the amazing ecosystem
+
+---
+
+**Paisalo Digital Limited** - Empowering lives one loan at a time with our High Tech : High Touch approach.
+
+*"BHARAT AB RUKNA NAHI"* 🇮🇳
 

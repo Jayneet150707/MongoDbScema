@@ -1,7 +1,8 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import paisaloTheme from './theme/paisaloTheme';
 
 // Layout
 import Layout from './components/layout/Layout';
@@ -41,61 +42,14 @@ import NotificationList from './pages/notifications/NotificationList';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import DepartmentManagement from './pages/admin/DepartmentManagement';
 import UserManagement from './pages/admin/UserManagement';
+import PaisaloUserManagement from './pages/admin/PaisaloUserManagement';
+import PaisaloDepartmentManagement from './pages/admin/PaisaloDepartmentManagement';
 
 // Auth Context and Protected Route
 import { useAuth } from './contexts/AuthContext';
 import NotFound from './pages/NotFound';
 
-// Create theme
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-    background: {
-      default: '#f5f5f5',
-    },
-  },
-  typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    h1: {
-      fontSize: '2.5rem',
-      fontWeight: 500,
-    },
-    h2: {
-      fontSize: '2rem',
-      fontWeight: 500,
-    },
-    h3: {
-      fontSize: '1.75rem',
-      fontWeight: 500,
-    },
-    h4: {
-      fontSize: '1.5rem',
-      fontWeight: 500,
-    },
-    h5: {
-      fontSize: '1.25rem',
-      fontWeight: 500,
-    },
-    h6: {
-      fontSize: '1rem',
-      fontWeight: 500,
-    },
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: 'none',
-        },
-      },
-    },
-  },
-});
+// Using Paisalo Digital Limited theme
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
@@ -114,7 +68,7 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={paisaloTheme}>
       <CssBaseline />
       <Routes>
         {/* Auth Routes */}
@@ -222,6 +176,22 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <UserManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="admin/paisalo-users"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <PaisaloUserManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="admin/paisalo-departments"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <PaisaloDepartmentManagement />
               </ProtectedRoute>
             }
           />
