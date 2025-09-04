@@ -126,6 +126,20 @@ export const surveyApi = {
         message: error.response?.data?.message || 'Failed to generate consent records' 
       };
     }
+  },
+
+  // Get survey by token (for anonymous access)
+  getSurveyByToken: async (token) => {
+    try {
+      const response = await axios.get(`/api/surveys/token/${token}`);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error fetching survey by token ${token}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch survey' 
+      };
+    }
   }
 };
 
@@ -306,6 +320,34 @@ export const consentApi = {
         message: error.response?.data?.message || 'Failed to check user consent' 
       };
     }
+  },
+
+  // Get consent status for a survey (admin)
+  getConsentStatus: async (surveyId) => {
+    try {
+      const response = await axios.get(`/api/surveys/${surveyId}/consent/status`);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error fetching consent status for survey ${surveyId}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch consent status' 
+      };
+    }
+  },
+
+  // Send consent emails
+  sendConsentEmails: async (surveyId) => {
+    try {
+      const response = await axios.post(`/api/surveys/${surveyId}/consent/send-emails`);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error sending consent emails for survey ${surveyId}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to send consent emails' 
+      };
+    }
   }
 };
 
@@ -393,6 +435,20 @@ export const responseApi = {
         message: error.response?.data?.message || 'Failed to fetch participation statistics' 
       };
     }
+  },
+
+  // Submit anonymous response
+  submitAnonymousResponse: async (responseData) => {
+    try {
+      const response = await axios.post('/api/responses/anonymous', responseData);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error('Error submitting anonymous response:', error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to submit anonymous response' 
+      };
+    }
   }
 };
 
@@ -422,6 +478,52 @@ export const reportApi = {
       return { 
         success: false, 
         message: error.response?.data?.message || 'Failed to generate user report' 
+      };
+    }
+  },
+
+  // Get user report
+  getUserReport: async (userId, surveyId) => {
+    try {
+      const response = await axios.get(`/api/reports/users/${userId}/surveys/${surveyId}`);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error fetching user report for survey ${surveyId}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch user report' 
+      };
+    }
+  },
+
+  // Export user report as PDF
+  exportUserReportPDF: async (userId, surveyId) => {
+    try {
+      const response = await axios.get(`/api/reports/users/${userId}/surveys/${surveyId}/export/pdf`, {
+        responseType: 'blob'
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error(`Error exporting user report PDF for survey ${surveyId}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to export user report as PDF' 
+      };
+    }
+  },
+
+  // Export user report as Excel
+  exportUserReportExcel: async (userId, surveyId) => {
+    try {
+      const response = await axios.get(`/api/reports/users/${userId}/surveys/${surveyId}/export/excel`, {
+        responseType: 'blob'
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error(`Error exporting user report Excel for survey ${surveyId}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to export user report as Excel' 
       };
     }
   },
@@ -513,6 +615,61 @@ export const notificationApi = {
         message: error.response?.data?.message || 'Failed to mark notification as read' 
       };
     }
+  },
+
+  // Get notifications
+  getNotifications: async () => {
+    try {
+      const response = await axios.get('/api/notifications');
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to fetch notifications' 
+      };
+    }
+  },
+
+  // Mark as read
+  markAsRead: async (id) => {
+    try {
+      const response = await axios.put(`/api/notifications/${id}/read`);
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(`Error marking notification ${id} as read:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to mark notification as read' 
+      };
+    }
+  },
+
+  // Delete notification
+  deleteNotification: async (id) => {
+    try {
+      await axios.delete(`/api/notifications/${id}`);
+      return { success: true };
+    } catch (error) {
+      console.error(`Error deleting notification ${id}:`, error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to delete notification' 
+      };
+    }
+  },
+
+  // Mark all as read
+  markAllAsRead: async () => {
+    try {
+      const response = await axios.put('/api/notifications/mark-all-read');
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to mark all notifications as read' 
+      };
+    }
   }
 };
-

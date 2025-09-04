@@ -28,6 +28,7 @@ import ConsentStatus from './pages/consent/ConsentStatus';
 // Response Pages
 import SurveyAttempt from './pages/responses/SurveyAttempt';
 import SurveyComplete from './pages/responses/SurveyComplete';
+import AnonymousSurveyAttempt from './pages/responses/AnonymousSurveyAttempt';
 
 // Report Pages
 import SurveyReport from './pages/reports/SurveyReport';
@@ -115,6 +116,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/consent/:token" element={<ConsentForm />} />
+        
+        {/* Anonymous Survey Route - No authentication required */}
+        <Route path="/survey/:token" element={<AnonymousSurveyAttempt />} />
 
         {/* Protected Routes */}
         <Route
@@ -203,4 +207,3 @@ function App() {
 }
 
 export default App;
-

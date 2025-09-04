@@ -12,6 +12,7 @@ const consentRoutes = require('./routes/consent.routes');
 const responseRoutes = require('./routes/response.routes');
 const reportRoutes = require('./routes/report.routes');
 const notificationRoutes = require('./routes/notification.routes');
+const anonymousRoutes = require('./routes/anonymous');
 
 // Create Express app
 const app = express();
@@ -47,6 +48,9 @@ app.use('/api/responses', responseRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/notifications', notificationRoutes);
 
+// Anonymous routes (no authentication required)
+app.use('/api', anonymousRoutes);
+
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, 'client/build')));
@@ -73,4 +77,3 @@ app.listen(PORT, () => {
 });
 
 module.exports = app; // For testing
-
