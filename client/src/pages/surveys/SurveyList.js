@@ -136,13 +136,13 @@ const SurveyList = () => {
 
   const getSurveyStatusChip = (survey) => {
     const now = new Date();
-    const publicDate = new Date(survey.publicDate);
-    const endDate = new Date(publicDate);
+    const publishDate = new Date(survey.publishDate);
+    const endDate = new Date(publishDate);
     endDate.setDate(endDate.getDate() + survey.noOfDays);
 
-    if (now < publicDate) {
+    if (now < publishDate) {
       return <Chip label="Upcoming" color="info" size="small" />;
-    } else if (now >= publicDate && now <= endDate) {
+    } else if (now >= publishDate && now <= endDate) {
       return <Chip label="Active" color="success" size="small" />;
     } else {
       return <Chip label="Closed" color="default" size="small" />;
@@ -194,7 +194,7 @@ const SurveyList = () => {
                         <TableCell>{survey.name}</TableCell>
                         <TableCell>{survey.department || 'All'}</TableCell>
                         <TableCell>
-                          {new Date(survey.publicDate).toLocaleDateString()}
+                          {new Date(survey.publishDate).toLocaleDateString()}
                         </TableCell>
                         <TableCell>{survey.noOfDays}</TableCell>
                         <TableCell>{getSurveyStatusChip(survey)}</TableCell>

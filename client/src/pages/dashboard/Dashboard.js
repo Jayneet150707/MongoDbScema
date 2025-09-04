@@ -213,7 +213,7 @@ const Dashboard = () => {
                         Department: {survey.department || 'All'}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Starts on: {new Date(survey.publicDate).toLocaleDateString()}
+                        Starts on: {new Date(survey.publishDate).toLocaleDateString()}
                       </Typography>
                     </CardContent>
                     <Divider />

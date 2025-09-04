@@ -54,7 +54,7 @@ const SurveyCreate = () => {
     name: Yup.string()
       .required('Survey name is required')
       .min(3, 'Survey name must be at least 3 characters'),
-    publicDate: Yup.date()
+    publishDate: Yup.date()
       .required('Public date is required')
       .min(new Date(), 'Public date must be in the future'),
     noOfDays: Yup.number()
@@ -75,7 +75,7 @@ const SurveyCreate = () => {
   const formik = useFormik({
     initialValues: {
       name: '',
-      publicDate: null,
+      publishDate: null,
       noOfDays: 7,
       department: '',
       employees: []
@@ -87,7 +87,7 @@ const SurveyCreate = () => {
         // Format the data for API
         const surveyData = {
           ...values,
-          publicDate: values.publicDate ? values.publicDate.toISOString() : null,
+          publishDate: values.publishDate ? values.publishDate.toISOString() : null,
           employees: values.employees.map(emp => emp.id)
         };
 
@@ -117,7 +117,7 @@ const SurveyCreate = () => {
   };
 
   const handleDateChange = (date) => {
-    formik.setFieldValue('publicDate', date);
+    formik.setFieldValue('publishDate', date);
   };
 
   return (
@@ -147,18 +147,18 @@ const SurveyCreate = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  id="publicDate"
-                  name="publicDate"
+                  id="publishDate"
+                  name="publishDate"
                   label="Public Date"
                   type="date"
-                  value={formik.values.publicDate ? new Date(formik.values.publicDate).toISOString().split('T')[0] : ''}
+                  value={formik.values.publishDate ? new Date(formik.values.publishDate).toISOString().split('T')[0] : ''}
                   onChange={(e) => {
                     const date = e.target.value ? new Date(e.target.value) : null;
                     handleDateChange(date);
                   }}
                   onBlur={formik.handleBlur}
-                  error={formik.touched.publicDate && Boolean(formik.errors.publicDate)}
-                  helperText={formik.touched.publicDate && formik.errors.publicDate}
+                  error={formik.touched.publishDate && Boolean(formik.errors.publishDate)}
+                  helperText={formik.touched.publishDate && formik.errors.publishDate}
                   InputLabelProps={{
                     shrink: true,
                   }}

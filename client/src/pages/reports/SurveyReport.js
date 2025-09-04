@@ -225,7 +225,7 @@ const SurveyReport = () => {
             </Grid>
             <Grid item xs={12} sm={4}>
               <Typography variant="body2" color="text.secondary">
-                Public Date: {new Date(survey?.publicDate).toLocaleDateString()}
+                Public Date: {new Date(survey?.publishDate).toLocaleDateString()}
               </Typography>
             </Grid>
             <Grid item xs={12} sm={4}>
