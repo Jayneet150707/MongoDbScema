@@ -21,6 +21,9 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import PersonIcon from '@mui/icons-material/Person';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import BusinessIcon from '@mui/icons-material/Business';
+import PeopleIcon from '@mui/icons-material/People';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 
 const drawerWidth = 240;
 
@@ -53,6 +56,24 @@ const Sidebar = ({ open, toggleDrawer }) => {
       text: 'Reports',
       icon: <BarChartIcon />,
       path: '/reports',
+      admin: true
+    },
+    {
+      text: 'Admin Dashboard',
+      icon: <AdminPanelSettingsIcon />,
+      path: '/admin',
+      admin: true
+    },
+    {
+      text: 'Departments',
+      icon: <BusinessIcon />,
+      path: '/admin/departments',
+      admin: true
+    },
+    {
+      text: 'User Management',
+      icon: <PeopleIcon />,
+      path: '/admin/users',
       admin: true
     },
     {
@@ -130,4 +151,3 @@ const Sidebar = ({ open, toggleDrawer }) => {
 };
 
 export default Sidebar;
-

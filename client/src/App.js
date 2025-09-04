@@ -37,6 +37,11 @@ import UserReport from './pages/reports/UserReport';
 // Notification Pages
 import NotificationList from './pages/notifications/NotificationList';
 
+// Admin Pages
+import AdminDashboard from './pages/admin/AdminDashboard';
+import DepartmentManagement from './pages/admin/DepartmentManagement';
+import UserManagement from './pages/admin/UserManagement';
+
 // Auth Context and Protected Route
 import { useAuth } from './contexts/AuthContext';
 import NotFound from './pages/NotFound';
@@ -194,6 +199,32 @@ function App() {
             }
           />
           <Route path="reports/users/:userId/surveys/:surveyId" element={<UserReport />} />
+
+          {/* Admin Routes */}
+          <Route
+            path="admin"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="admin/departments"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <DepartmentManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="admin/users"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <UserManagement />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Notification Routes */}
           <Route path="notifications" element={<NotificationList />} />
