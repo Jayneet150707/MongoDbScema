@@ -18,7 +18,8 @@ const SurveySchema = new mongoose.Schema({
     max: [365, 'Duration cannot exceed 365 days']
   },
   department: {
-    type: String,
+    type: mongoose.Schema.ObjectId,
+    ref: 'Department',
     required: [true, 'Please provide target department']
   },
   employees: [{
@@ -117,4 +118,3 @@ SurveySchema.set('toJSON', { virtuals: true });
 SurveySchema.set('toObject', { virtuals: true });
 
 module.exports = mongoose.model('Survey', SurveySchema);
-

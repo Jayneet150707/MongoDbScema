@@ -13,6 +13,8 @@ const responseRoutes = require('./routes/response.routes');
 const reportRoutes = require('./routes/report.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const anonymousRoutes = require('./routes/anonymous');
+const departmentRoutes = require('./routes/department.routes');
+const employeeRoutes = require('./routes/employee.routes');
 
 // Create Express app
 const app = express();
@@ -47,6 +49,8 @@ app.use('/api/consent', consentRoutes);
 app.use('/api/responses', responseRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/departments', departmentRoutes);
+app.use('/api/employees', employeeRoutes);
 
 // Anonymous routes (no authentication required)
 app.use('/api', anonymousRoutes);

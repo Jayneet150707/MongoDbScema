@@ -23,7 +23,8 @@ const UserSchema = new mongoose.Schema({
     select: false
   },
   department: {
-    type: String,
+    type: mongoose.Schema.ObjectId,
+    ref: 'Department',
     required: [true, 'Please provide a department']
   },
   role: {
@@ -32,12 +33,36 @@ const UserSchema = new mongoose.Schema({
     default: 'employee'
   },
   managerId: {
-    type: String,
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
     default: null
   },
-  directReports: {
-    type: [String],
-    default: []
+  directReports: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'User'
+  }],
+  position: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'Position cannot be more than 100 characters']
+  },
+  employeeId: {
+    type: String,
+    unique: true,
+    sparse: true,
+    trim: true
+  },
+  phoneNumber: {
+    type: String,
+    trim: true
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  joinDate: {
+    type: Date,
+    default: Date.now
   },
   createdAt: {
     type: Date,
@@ -79,5 +104,76 @@ UserSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-module.exports = mongoose.model('User', UserSchema);
+// Get all direct reports
+UserSchema.methods.getDirectReports = async function() {
+  return await this.model('User').find({ managerId: this._id })
+    .populate('department', 'name code')
+    .select('-password');
+};
 
+// Get reporting hierarchy (all reports under this user)
+UserSchema.methods.getReportingHierarchy = async function() {
+  const User = this.model('User');
+  const hierarchy = [];
+  
+  const getReports = async (managerId) => {
+    const reports = await User.find({ managerId })
+      .populate('department', 'name code')
+      .select('-password');
+    
+    for (const report of reports) {
+      hierarchy.push(report);
+      await getReports(report._id);
+    }
+  };
+  
+  await getReports(this._id);
+  return hierarchy;
+};
+
+// Get manager chain (all managers above this user)
+UserSchema.methods.getManagerChain = async function() {
+  const User = this.model('User');
+  const chain = [];
+  let currentUser = this;
+  
+  while (currentUser.managerId) {
+    const manager = await User.findById(currentUser.managerId)
+      .populate('department', 'name code')
+      .select('-password');
+    
+    if (manager) {
+      chain.push(manager);
+      currentUser = manager;
+    } else {
+      break;
+    }
+  }
+  
+  return chain;
+};
+
+// Static method to get users by department
+UserSchema.statics.getUsersByDepartment = async function(departmentId) {
+  return await this.find({ 
+    department: departmentId, 
+    isActive: true 
+  })
+  .populate('department', 'name code')
+  .populate('managerId', 'name email')
+  .select('-password')
+  .sort({ name: 1 });
+};
+
+// Static method to get department managers
+UserSchema.statics.getDepartmentManagers = async function() {
+  return await this.find({ 
+    role: { $in: ['manager', 'admin'] },
+    isActive: true 
+  })
+  .populate('department', 'name code')
+  .select('-password')
+  .sort({ name: 1 });
+};
+
+module.exports = mongoose.model('User', UserSchema);

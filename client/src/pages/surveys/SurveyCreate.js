@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
@@ -18,35 +18,18 @@ import {
   Chip
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { surveyApi } from '../../services/api';
+import { surveyApi, departmentApi, employeeApi } from '../../services/api';
 import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
-// Mock data for departments and employees
-// In a real app, these would come from an API
-const departments = [
-  'Human Resources',
-  'Finance',
-  'Information Technology',
-  'Marketing',
-  'Operations',
-  'Sales',
-  'Research & Development',
-  'Customer Support',
-  'All Departments'
-];
-
-const employees = [
-  { id: '1', name: 'John Doe', email: 'john.doe@example.com', department: 'Human Resources' },
-  { id: '2', name: 'Jane Smith', email: 'jane.smith@example.com', department: 'Finance' },
-  { id: '3', name: 'Robert Johnson', email: 'robert.johnson@example.com', department: 'Information Technology' },
-  { id: '4', name: 'Emily Davis', email: 'emily.davis@example.com', department: 'Marketing' },
-  { id: '5', name: 'Michael Wilson', email: 'michael.wilson@example.com', department: 'Operations' }
-];
-
 const SurveyCreate = () => {
   const [loading, setLoading] = useState(false);
+  const [departments, setDepartments] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [filteredEmployees, setFilteredEmployees] = useState([]);
+  const [loadingDepartments, setLoadingDepartments] = useState(true);
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
   const navigate = useNavigate();
 
   // Form validation schema
@@ -65,7 +48,7 @@ const SurveyCreate = () => {
       .required('Department is required'),
     employees: Yup.array()
       .when('department', {
-        is: 'All Departments',
+        is: 'all',
         then: (schema) => schema,
         otherwise: (schema) => schema.min(1, 'Select at least one employee')
       })
@@ -88,7 +71,7 @@ const SurveyCreate = () => {
         const surveyData = {
           ...values,
           publishDate: values.publishDate ? values.publishDate.toISOString() : null,
-          employees: values.employees.map(emp => emp.id)
+          employees: values.employees.map(emp => emp._id)
         };
 
         const result = await surveyApi.createSurvey(surveyData);
@@ -107,10 +90,82 @@ const SurveyCreate = () => {
     }
   });
 
-  // Filter employees based on selected department
-  const filteredEmployees = formik.values.department === 'All Departments'
-    ? employees
-    : employees.filter(emp => emp.department === formik.values.department);
+  // Fetch departments on component mount
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  // Fetch employees when department changes
+  useEffect(() => {
+    if (formik.values.department && formik.values.department !== 'all') {
+      fetchEmployeesByDepartment(formik.values.department);
+    } else if (formik.values.department === 'all') {
+      fetchAllEmployees();
+    }
+  }, [formik.values.department]);
+
+  const fetchDepartments = async () => {
+    setLoadingDepartments(true);
+    try {
+      const result = await departmentApi.getDepartments({ active: 'true' });
+      if (result.success) {
+        // Add "All Departments" option
+        const departmentOptions = [
+          { _id: 'all', name: 'All Departments' },
+          ...result.data
+        ];
+        setDepartments(departmentOptions);
+      } else {
+        toast.error('Failed to fetch departments');
+      }
+    } catch (error) {
+      console.error('Error fetching departments:', error);
+      toast.error('An error occurred while fetching departments');
+    } finally {
+      setLoadingDepartments(false);
+    }
+  };
+
+  const fetchEmployeesByDepartment = async (departmentId) => {
+    setLoadingEmployees(true);
+    try {
+      const result = await employeeApi.getEmployeesByDepartment(departmentId, {
+        includeSubdepartments: 'true',
+        active: 'true'
+      });
+      if (result.success) {
+        setFilteredEmployees(result.data);
+      } else {
+        toast.error('Failed to fetch employees');
+        setFilteredEmployees([]);
+      }
+    } catch (error) {
+      console.error('Error fetching employees by department:', error);
+      toast.error('An error occurred while fetching employees');
+      setFilteredEmployees([]);
+    } finally {
+      setLoadingEmployees(false);
+    }
+  };
+
+  const fetchAllEmployees = async () => {
+    setLoadingEmployees(true);
+    try {
+      const result = await employeeApi.getEmployees({ active: 'true' });
+      if (result.success) {
+        setFilteredEmployees(result.data);
+      } else {
+        toast.error('Failed to fetch employees');
+        setFilteredEmployees([]);
+      }
+    } catch (error) {
+      console.error('Error fetching all employees:', error);
+      toast.error('An error occurred while fetching employees');
+      setFilteredEmployees([]);
+    } finally {
+      setLoadingEmployees(false);
+    }
+  };
 
   const handleCancel = () => {
     navigate('/surveys');
@@ -185,6 +240,7 @@ const SurveyCreate = () => {
                 <FormControl 
                   fullWidth
                   error={formik.touched.department && Boolean(formik.errors.department)}
+                  disabled={loadingDepartments}
                 >
                   <InputLabel id="department-label">Target Department</InputLabel>
                   <Select
@@ -200,11 +256,18 @@ const SurveyCreate = () => {
                     }}
                     onBlur={formik.handleBlur}
                   >
-                    {departments.map((dept) => (
-                      <MenuItem key={dept} value={dept}>
-                        {dept}
+                    {loadingDepartments ? (
+                      <MenuItem disabled>
+                        <CircularProgress size={20} sx={{ mr: 1 }} />
+                        Loading departments...
                       </MenuItem>
-                    ))}
+                    ) : (
+                      departments.map((dept) => (
+                        <MenuItem key={dept._id} value={dept._id}>
+                          {dept.name}
+                        </MenuItem>
+                      ))
+                    )}
                   </Select>
                   {formik.touched.department && formik.errors.department && (
                     <FormHelperText>{formik.errors.department}</FormHelperText>
@@ -212,7 +275,7 @@ const SurveyCreate = () => {
                 </FormControl>
               </Grid>
 
-              {formik.values.department && formik.values.department !== 'All Departments' && (
+              {formik.values.department && formik.values.department !== 'all' && (
                 <Grid item xs={12}>
                   <Autocomplete
                     multiple
@@ -223,6 +286,8 @@ const SurveyCreate = () => {
                     onChange={(event, newValue) => {
                       formik.setFieldValue('employees', newValue);
                     }}
+                    loading={loadingEmployees}
+                    disabled={loadingEmployees}
                     renderTags={(value, getTagProps) =>
                       value.map((option, index) => (
                         <Chip
@@ -273,4 +338,3 @@ const SurveyCreate = () => {
 };
 
 export default SurveyCreate;
-
